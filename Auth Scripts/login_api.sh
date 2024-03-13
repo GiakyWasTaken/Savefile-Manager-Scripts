@@ -1,22 +1,20 @@
 #!/bin/bash
 
+# Source the .env file
+source ../.env
+
 # API login endpoint
-login_url="http://localhost:8000/api/login"
-
-# API login credentials
-email="giaky@example.com"
-password="giaky_pw"
-
+login_url=$API_URL"login"
 
 # Send login request
 response=$(curl -s -X POST \
     -H "Accept: application/json" \
     -H "Content-Type: application/json" \
     -d '{
-        "email": "'"$email"'",
-        "password": "'"$password"'"
+        "email": "'"$EMAIL"'",
+        "password": "'"$PASSWORD"'"
     }' \
-    $login_url)
+    "$login_url")
 
 # Print the entire response
 # echo "$response"
@@ -32,3 +30,6 @@ fi
 
 # Print the token
 echo "API Token: $api_token"
+
+# Save the token to the .env file
+echo "API_TOKEN=$api_token" >> ../.env

@@ -1,24 +1,22 @@
 #!/bin/bash
 
-# API registration endpoint
-register_url="http://localhost:8000/api/register"
+# Source the .env file
+source ../.env
 
-# API registration credentials
-name="giaky"
-password="giaky_pw"
-email="giaky@example.com"
+# API registration endpoint
+register_url=$API_URL"register"
 
 # Send registration request
 response=$(curl -s -X POST \
     -H "Accept: application/json" \
     -H "Content-Type: application/json" \
     -d '{
-        "name": "'"$name"'",
-        "email": "'"$email"'",
-        "password": "'"$password"'",
-        "password_confirmation": "'"$password"'"
+        "name": "'"$NAME"'",
+        "email": "'"$EMAIL"'",
+        "password": "'"$PASSWORD"'",
+        "password_confirmation": "'"$PASSWORD"'"
     }' \
-    $register_url)
+    "$register_url")
 
 # Print the entire response
 # echo "$response"
@@ -40,3 +38,6 @@ fi
 
 # Print the API token
 echo "API Token: $api_token"
+
+# Save the token to the .env file
+echo "API_TOKEN=$api_token" >> ../.env
