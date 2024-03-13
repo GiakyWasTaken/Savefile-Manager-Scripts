@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Source the .env file
-source ../.env
+source .env
 
 # API logout endpoint
 logout_url=$API_URL"logout"
@@ -19,13 +19,10 @@ response=$(curl -X GET \
 # Check if the response contains "Logged out"
 if [[ $response == *"Logged out"* ]]; then
     echo "Logged out"
-elif [[ $response == *"Unauthenticated"* ]]; then
-    echo "Unauthenticated"
-    exit 1
 else
     echo "Failed to log out"
     exit 1
 fi
 
-# Remove the token from the .env file
-sed -i '/API_TOKEN/d' ../.env
+# Unset the API token
+unset API_TOKEN

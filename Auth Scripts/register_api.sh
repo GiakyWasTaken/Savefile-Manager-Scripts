@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Source the .env file
-source ../.env
+source .env
 
 # API registration endpoint
 register_url=$API_URL"register"
@@ -39,5 +39,5 @@ fi
 # Print the API token
 echo "API Token: $api_token"
 
-# Save the token to the .env file
-echo "API_TOKEN=$api_token" >> ../.env
+# Export the token
+export API_TOKEN=$api_token
