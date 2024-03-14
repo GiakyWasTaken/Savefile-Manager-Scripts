@@ -38,11 +38,16 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Send store file request
-response=$(curl -s -X POST \
+response=$(curl -s -w "%{http_code}" -X POST \
     -H "Authorization: Bearer $API_TOKEN" \
+    -H "Accept: application/json" \
     -F "savefile=@$file" \
     -F "fk_id_game=1" \
     "$store_url")
+
+# Separate the HTTP status code from the response
+http_code=${response: -3}
+response=${response::-3}
 
 # Check if the --raw argument is provided
 if [[ $raw_response == true ]]; then
@@ -55,17 +60,22 @@ if [[ $raw_response == true ]]; then
     else
         exit 1
     fi
-else
-    # Extract the file_name from the response
-    file_name=$(echo "$response" | grep -oP '(?<="file_name":")[^"]+')
-
-    # Check if the response contains the file_name
-    if [[ $file_name == "" ]]; then
-        echo "Failed to upload $file"
-        echo "$response"
-        exit 1
-    fi
-
-    # Print the file_name
-    echo "Successfully uploaded $file_name"
 fi
+# Extract the file_name from the response
+file_name=$(echo "$response" | grep -oP '(?<="file_name":")[^"]+')
+
+# Check if the response contains the file_name
+if [[ $file_name == "" ]]; then
+    echo "Failed to upload $file"
+    # Print the response if shorter than 5 lines
+    if [ "$(echo "$response" | wc -l)" -le 5 ]; then
+        echo "$response"
+    else
+        # Otherwise print the HTTP status code
+        ./http_codes.sh "$http_code"
+    fi
+    exit 1
+fi
+
+# Print the file_name
+echo "Successfully uploaded $file_name"
