@@ -53,7 +53,7 @@ crawling_dir=$NDS_SAVES_PATH
 # Loop through each file and pass it as an argument to another script
 for file in "$crawling_dir"/*; do
     # Call your other script and pass the file as an argument
-    output=$(./upload_save.sh "$file" "$game_id")
+    output=$(./store_save.sh "$file" "$game_id")
 
     # Get the exit code of the previous command
     exit_code=$?
