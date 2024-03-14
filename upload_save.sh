@@ -8,7 +8,7 @@ store_url=$API_URL"savefile"
 
 # Check if the file argument is provided
 if [ $# -eq 0 ]; then
-    echo "Please provide a file as an argument."
+    echo "Please provide a file and relative game id as an argument."
     exit 1
 fi
 
@@ -21,6 +21,19 @@ if [ ! -f "$file" ]; then
     echo "File $file does not exist."
     exit 1
 fi
+
+# Check if the game id is provided
+if [ -z "$1" ]; then
+    echo "Please provide the game ID as an argument."
+    exit 1
+fi
+# Check if the game id is a number
+if ! [[ $1 =~ ^[0-9]+$ ]]; then
+    echo "Game ID must be a number."
+    exit 1
+fi
+game_id="$1"
+shift
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do
@@ -42,7 +55,7 @@ response=$(curl -s -w "%{http_code}" -X POST \
     -H "Authorization: Bearer $API_TOKEN" \
     -H "Accept: application/json" \
     -F "savefile=@$file" \
-    -F "fk_id_game=1" \
+    -F "fk_id_game=$game_id" \
     "$store_url")
 
 # Separate the HTTP status code from the response
@@ -78,4 +91,4 @@ if [[ $file_name == "" ]]; then
 fi
 
 # Print the file_name
-echo "Successfully uploaded $file_name"
+echo "Successfully uploaded $file_name with game id $game_id"

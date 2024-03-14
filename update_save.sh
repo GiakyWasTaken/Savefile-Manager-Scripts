@@ -94,4 +94,4 @@ if [[ $file_name == "" ]]; then
 fi
 
 # Print the file_name
-echo "Successfully updated $file_name"
+echo "Successfully updated savefile with id $id_savefile named $file_name"
