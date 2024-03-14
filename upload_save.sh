@@ -14,6 +14,7 @@ fi
 
 # Get the file path from the argument
 file="$1"
+shift
 
 # Check if the file exists
 if [ ! -f "$file" ]; then
@@ -22,7 +23,6 @@ if [ ! -f "$file" ]; then
 fi
 
 # Parse command line options
-shift
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
@@ -44,11 +44,17 @@ response=$(curl -s -X POST \
     -F "fk_id_game=1" \
     "$store_url")
 
-
 # Check if the --raw argument is provided
 if [[ $raw_response == true ]]; then
     # Print the raw response
     echo "$response"
+
+    # Check if the response contains the file_name to determine the exit code
+    if [[ $response == *"file_name"* ]]; then
+        exit 0
+    else
+        exit 1
+    fi
 else
     # Extract the file_name from the response
     file_name=$(echo "$response" | grep -oP '(?<="file_name":")[^"]+')
@@ -61,5 +67,5 @@ else
     fi
 
     # Print the file_name
-    echo "$file_name"
+    echo "Successfully uploaded $file_name"
 fi

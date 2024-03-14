@@ -15,7 +15,6 @@ fi
 # Get the file path from the argument
 file="$1"
 shift
-file="/home/giaky/Emulators/Nintendo DS/saves/101 In 1 Games.sav"
 
 # Check if the file exists
 if [ ! -f "$file" ]; then
@@ -23,25 +22,21 @@ if [ ! -f "$file" ]; then
     exit 1
 fi
 
-# Get the game id from the argument
-game_id="$1"
+# Get the savefile id from the argument
+id_savefile="$1"
 shift
 
-game_id=1
-
-# Check if the game id is provided and is a number
-if [[ $game_id == "" ]]; then
+# Check if the savefile id is provided and is a number
+if [[ $id_savefile == "" ]]; then
     echo "Please provide a game id as an argument."
     exit 1
-elif ! [[ $game_id =~ ^[0-9]+$ ]]; then
-    echo "Game id must be a number."
+elif ! [[ $id_savefile =~ ^[0-9]+$ ]]; then
+    echo "Savefile ID must be a number."
     exit 1
 fi
 
-# Add the game id to the URL
-update_url="$update_url/$game_id"
-
-
+# Add the savefile id to the URL
+update_url="$update_url/$id_savefile"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do
@@ -63,14 +58,19 @@ response=$(curl -s -X POST \
     -H "Authorization: Bearer $API_TOKEN" \
     -F "_method=PUT" \
     -F "savefile=@$file" \
-    -F "fk_id_game=1" \
     "$update_url")
-
 
 # Check if the --raw argument is provided
 if [[ $raw_response == true ]]; then
     # Print the raw response
     echo "$response"
+
+    # Check if the response contains the file_name to determine the exit code
+    if [[ $response == *"file_name"* ]]; then
+        exit 0
+    else
+        exit 1
+    fi
 else
     # Extract the file_name from the response
     file_name=$(echo "$response" | grep -oP '(?<="file_name":")[^"]+')
@@ -83,5 +83,5 @@ else
     fi
 
     # Print the file_name
-    echo "$file_name"
+    echo "Successfully uploaded $file_name"
 fi
