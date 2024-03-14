@@ -33,10 +33,15 @@ already_exists=0
 
 ### To-do: Add which directory to parse from argument
 
+game_id=1
+
 # Loop through each file and pass it as an argument to another script
 for file in "$NDS_SAVES_PATH"/*; do
+
+    ### To-do: Remove hardcoded game_id, and get it from the game name or folder, maybe?
+
     # Call your other script and pass the file as an argument
-    output=$(./upload_save.sh "$file")
+    output=$(./upload_save.sh "$file" "$game_id")
 
     # Get the exit code of the previous command
     exit_code=$?
@@ -52,8 +57,6 @@ for file in "$NDS_SAVES_PATH"/*; do
     else
         # If the file already exists save the file name to an array
         if [[ $output == *"already exists"* ]]; then
-            # Extract the file name from the path
-            file=$(basename "$file")
             # Add the file name to the array
             existing_files+=("$file")
             # Increment the already_exists counter
@@ -64,8 +67,9 @@ for file in "$NDS_SAVES_PATH"/*; do
 done
 
 # Print the count of exit codes
-echo "Files successfully uploaded: $exit_code_0"
-echo "Files failed to upload: $exit_code_1"
+echo "Files successfully uploaded: $exit_code_0 / $((exit_code_0 + exit_code_1))"
+echo "Files failed to upload: $exit_code_1 / $((exit_code_0 + exit_code_1))"
+echo "Files that already exist: $already_exists / $exit_code_1"
 
 # Check if the ignore-existing argument is provided or if there are no existing files
 if [[ $ignore_existing == true || ${#existing_files[@]} -eq 0 ]]; then
@@ -73,7 +77,6 @@ if [[ $ignore_existing == true || ${#existing_files[@]} -eq 0 ]]; then
 fi
 
 # Manage the already existing files
-echo "Files that already exist: $already_exists"
 
 # Check if auto-update argument is provided
 if [[ $auto_update != true ]]; then
@@ -86,13 +89,45 @@ if [[ $auto_update != true ]]; then
         # Exit the script if the user does not want to update the files
         exit 0
     fi
+else
+    echo "Auto-updating already existing files..."
 fi
 
-### To-do: Add savefile ID to know which file to update
+# Reset the counters
+exit_code_0=0
+exit_code_1=0
 
 # Loop through each existing file and pass it as an argument to the update script
 for existing_file in "${existing_files[@]}"; do
+    # Extract the savefile name from the file path
+    savefile_name=$(basename "$existing_file") 
+
+    # Use the savefile name to get the savefile ID
+    savefile_id=$(./get_save_id.sh "$savefile_name" $game_id)
+
+    if [[ $verbose == true ]]; then
+        echo "Updating $savefile_name with ID $savefile_id"
+    fi
+
     # Call your update script and pass the file as an argument
-    echo "Updating $existing_file"
-    ./update_save.sh "$existing_file"
+    output=$(./update_save.sh "$existing_file" "$savefile_id")
+
+    # Get the exit code of the previous command
+    exit_code=$?
+
+    # Check if the verbose argument is provided
+    if [[ $verbose == true ]]; then
+        echo "$output"
+    fi
+
+    # Check the exit code and increment the respective counter
+    if [ $exit_code -eq 0 ]; then
+        exit_code_0=$((exit_code_0 + 1))
+    else
+        exit_code_1=$((exit_code_1 + 1))
+    fi
 done
+
+# Print the count of exit codes
+echo "Files successfully updated: $exit_code_0 / $((exit_code_0 + exit_code_1))"
+echo "Files failed to update: $exit_code_1 / $((exit_code_0 + exit_code_1))"
