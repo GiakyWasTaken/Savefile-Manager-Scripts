@@ -12,7 +12,7 @@ exit_code_1=0
 # Loop through each file and pass it as an argument to another script
 for file in "$NDS_SAVES_PATH"/*; do
     # Call your other script and pass the file as an argument
-    ./upload_saves.sh "$file"
+    ./upload_save.sh "$file"
 
     # Get the exit code of the previous command
     exit_code=$?
