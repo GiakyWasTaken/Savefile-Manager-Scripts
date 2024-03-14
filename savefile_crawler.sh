@@ -3,6 +3,21 @@
 # Source the .env file
 source .env
 
+# Parse the directory where the crawler will look for savefiles from argument
+crawling_dir="$1"
+shift
+
+# Check if the directory is provided
+if [ -z "$crawling_dir" ]; then
+    echo "No directory provided"
+    exit 1
+fi
+# Check if the directory exists
+if [ ! -d "$crawling_dir" ]; then
+    echo "Directory $crawling_dir does not exist"
+    exit 1
+fi
+
 # Parse command line options
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -31,15 +46,12 @@ exit_code_0=0
 exit_code_1=0
 already_exists=0
 
-### To-do: Add which directory to parse from argument
-
+### To-do: Remove hardcoded game_id and dir, and get it from the game name or folder, maybe?
 game_id=1
+crawling_dir=$NDS_SAVES_PATH
 
 # Loop through each file and pass it as an argument to another script
-for file in "$NDS_SAVES_PATH"/*; do
-
-    ### To-do: Remove hardcoded game_id, and get it from the game name or folder, maybe?
-
+for file in "$crawling_dir"/*; do
     # Call your other script and pass the file as an argument
     output=$(./upload_save.sh "$file" "$game_id")
 
