@@ -53,7 +53,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Send store file request
+# Send update file request
 response=$(curl -s -w "%{http_code}" -X POST \
     -H "Authorization: Bearer $API_TOKEN" \
     -F "_method=PUT" \

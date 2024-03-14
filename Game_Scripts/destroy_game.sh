@@ -4,20 +4,20 @@
 source .env
 
 # API endpoint URL
-savefile_delete_url=$API_URL"savefile"
+game_destroy_url=$API_URL"game"
 
-# Get the savefile id from the argument
-savefile_id="$1"
+# Get the game id from the argument
+game_id="$1"
 shift
 
-# Check if the savefile id is provided
-if [ -z "$savefile_id" ]; then
-    echo "Please provide the savefile ID as an argument"
+# Check if the game id is provided
+if [ -z "$game_id" ]; then
+    echo "Please provide the game ID as an argument"
     exit 1
 fi
-# Check if the savefile id is a number
-if ! [[ $savefile_id =~ ^[0-9]+$ ]]; then
-    echo "Savefile ID must be a number"
+# Check if the game id is a number
+if ! [[ $game_id =~ ^[0-9]+$ ]]; then
+    echo "Game ID must be a number"
     exit 1
 fi
 
@@ -36,15 +36,15 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Add the savefile id to the API endpoint URL
-savefile_delete_url="$savefile_delete_url/$savefile_id"
+# Add the game id to the API endpoint URL
+game_destroy_url="$game_destroy_url/$game_id"
 
-# Make the API request and save the response to a variable
+# Send delete game request
 response=$(curl -s -w "%{http_code}" -X DELETE \
     -H "Authorization: Bearer $API_TOKEN" \
     -H "Accept: application/json" \
     -H "Content-Type: application/json" \
-    "$savefile_delete_url")
+    "$game_destroy_url")
 
 # Separate the HTTP status code from the response
 http_code=${response: -3}
@@ -56,11 +56,11 @@ if [[ $verbose == true ]]; then
 fi
 
 # Check if the request succeeded
-if [[ $http_code == 200 ]]; then
-    echo "Savefile successfully deleted"
+if [[ $http_code == 204 ]]; then
+    echo "Game successfully deleted"
     exit 0
 else
-    echo "Failed to delete the savefile"
+    echo "Failed to delete the game"
     ./../http_codes.sh "$http_code"
     exit 1
 fi

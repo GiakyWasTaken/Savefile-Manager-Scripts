@@ -6,12 +6,12 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-# Get the json file from a script that lists all games from the API
-json_file=$(./list_games.sh --raw)
+# Get the json file from a script that indexes all games from the API
+json_file=$(./index_games.sh --raw)
 
-# Check if list_games.sh failed
+# Check if index_games.sh failed
 if [[ $json_file == *"Failed"* ]]; then
-    echo "Failed to get the list of games"
+    echo "Failed to get the index of games"
     exit 1
 fi
 

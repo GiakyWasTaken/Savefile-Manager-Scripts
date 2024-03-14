@@ -4,7 +4,7 @@
 source .env
 
 # API endpoint URL
-game_list_url=$API_URL"game"
+savefile_index_url=$API_URL"savefile"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do
@@ -21,12 +21,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Make the API request and save the response to a variable
+# Send index savefiles request
 response=$(curl -s -X GET \
     -H "Authorization: Bearer $API_TOKEN" \
     -H "Accept: application/json" \
     -H "Content-Type: application/json" \
-    "$game_list_url")
+    "$savefile_index_url")
 
 # Check if the --raw option is specified
 if [[ $raw_response == true ]]; then
@@ -35,10 +35,10 @@ if [[ $raw_response == true ]]; then
 fi
 
 # Extract the names from the JSON response using pattern matching
-names=$(echo "$response" | grep -o '"name":"[^"]*"' | cut -d'"' -f4)
+names=$(echo "$response" | grep -o '"file_name":"[^"]*"' | cut -d'"' -f4)
 
 if [[ $names == "" ]]; then
-    echo "Failed to get the list of games"
+    echo "Failed to get the index of savefiles"
     echo "$response"
     exit 1
 fi

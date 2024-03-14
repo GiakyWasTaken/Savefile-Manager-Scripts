@@ -15,12 +15,12 @@ if [[ $2 =~ ^[0-9]+$ ]]; then
     game_id_flag=true
 fi
 
-# Get the json file from a script that lists all savefiles from the API
-json_file=$(./list_saves.sh --raw)
+# Get the json file from a script that indexes all savefiles from the API
+json_file=$(./index_saves.sh --raw)
 
-# Check if list_saves.sh failed
+# Check if index_saves.sh failed
 if [[ $json_file == *"Failed"* ]]; then
-    echo "Failed to get the list of savefiles"
+    echo "Failed to get the index of savefiles"
     exit 1
 fi
 

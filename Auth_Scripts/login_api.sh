@@ -16,9 +16,6 @@ response=$(curl -s -X POST \
     }' \
     "$login_url")
 
-# Print the entire response
-# echo "$response"
-
 # Extract the token from the response
 api_token=$(echo "$response" | grep -oP '(?<="token":")[^"]+')
 
