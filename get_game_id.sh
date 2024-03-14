@@ -9,7 +9,11 @@ fi
 # Get the json file from a script that lists all games from the API
 json_file=$(./list_games.sh --raw)
 
-# echo "$json_file"
+# Check if list_games.sh failed
+if [[ $json_file == *"Failed"* ]]; then
+    echo "Failed to get the list of games"
+    exit 1
+fi
 
 ## Requires jq to be installed
 # Parse the JSON file and select the game ID based on the provided game name
@@ -21,4 +25,5 @@ if [ -z "$game_id" ]; then
     exit 1
 fi
 
+# Echo the game ID
 echo "$game_id"
