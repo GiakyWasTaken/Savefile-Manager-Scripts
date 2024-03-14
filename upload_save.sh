@@ -91,4 +91,4 @@ if [[ $file_name == "" ]]; then
 fi
 
 # Print the file_name
-echo "Successfully uploaded $file_name with game id $game_id"
+echo "Successfully uploaded $file_name with game ID = $game_id"

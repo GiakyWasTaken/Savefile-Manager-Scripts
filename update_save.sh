@@ -28,10 +28,10 @@ shift
 
 # Check if the savefile id is provided and is a number
 if [[ $id_savefile == "" ]]; then
-    echo "Please provide a game id as an argument."
+    echo "Please provide a savefile id as an argument."
     exit 1
 elif ! [[ $id_savefile =~ ^[0-9]+$ ]]; then
-    echo "Savefile ID must be a number."
+    echo "Savefile id must be a number."
     exit 1
 fi
 
@@ -94,4 +94,4 @@ if [[ $file_name == "" ]]; then
 fi
 
 # Print the file_name
-echo "Successfully updated savefile with id $id_savefile named $file_name"
+echo "Successfully updated savefile with ID = $id_savefile named locally $file_name"
