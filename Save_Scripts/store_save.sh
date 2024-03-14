@@ -4,11 +4,11 @@
 source .env
 
 # API endpoint URL
-update_url=$API_URL"savefile"
+store_url=$API_URL"savefile"
 
 # Check if the file argument is provided
 if [ $# -eq 0 ]; then
-    echo "Please provide a file as an argument."
+    echo "Please provide a file and relative game id as an argument."
     exit 1
 fi
 
@@ -22,21 +22,18 @@ if [ ! -f "$file" ]; then
     exit 1
 fi
 
-# Get the savefile id from the argument
-id_savefile="$1"
-shift
-
-# Check if the savefile id is provided and is a number
-if [[ $id_savefile == "" ]]; then
-    echo "Please provide a savefile id as an argument."
-    exit 1
-elif ! [[ $id_savefile =~ ^[0-9]+$ ]]; then
-    echo "Savefile id must be a number."
+# Check if the game id is provided
+if [ -z "$1" ]; then
+    echo "Please provide the game ID as an argument."
     exit 1
 fi
-
-# Add the savefile id to the URL
-update_url="$update_url/$id_savefile"
+# Check if the game id is a number
+if ! [[ $1 =~ ^[0-9]+$ ]]; then
+    echo "Game ID must be a number."
+    exit 1
+fi
+game_id="$1"
+shift
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do
@@ -56,9 +53,10 @@ done
 # Send store file request
 response=$(curl -s -w "%{http_code}" -X POST \
     -H "Authorization: Bearer $API_TOKEN" \
-    -F "_method=PUT" \
+    -H "Accept: application/json" \
     -F "savefile=@$file" \
-    "$update_url")
+    -F "fk_id_game=$game_id" \
+    "$store_url")
 
 # Separate the HTTP status code from the response
 http_code=${response: -3}
@@ -76,22 +74,21 @@ if [[ $raw_response == true ]]; then
         exit 1
     fi
 fi
-
 # Extract the file_name from the response
 file_name=$(echo "$response" | grep -oP '(?<="file_name":")[^"]+')
 
 # Check if the response contains the file_name
 if [[ $file_name == "" ]]; then
-    echo "Failed to update $file"
+    echo "Failed to upload $file"
     # Print the response if shorter than 5 lines
     if [ "$(echo "$response" | wc -l)" -le 5 ]; then
         echo "$response"
     else
         # Otherwise print the HTTP status code
-        ./http_codes.sh "$http_code"
+        ./../http_codes.sh "$http_code"
     fi
     exit 1
 fi
 
 # Print the file_name
-echo "Successfully updated savefile with ID = $id_savefile named locally $file_name"
+echo "Successfully uploaded $file_name with game ID = $game_id"

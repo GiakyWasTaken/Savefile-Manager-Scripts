@@ -53,7 +53,7 @@ crawling_dir=$NDS_SAVES_PATH
 # Loop through each file and pass it as an argument to another script
 for file in "$crawling_dir"/*; do
     # Call your other script and pass the file as an argument
-    output=$(./store_save.sh "$file" "$game_id")
+    output=$(./Save_Scripts/store_save.sh "$file" "$game_id")
 
     # Get the exit code of the previous command
     exit_code=$?
@@ -115,14 +115,14 @@ for existing_file in "${existing_files[@]}"; do
     savefile_name=$(basename "$existing_file") 
 
     # Use the savefile name to get the savefile ID
-    savefile_id=$(./get_save_id.sh "$savefile_name" $game_id)
+    savefile_id=$(./Save_Scripts/get_save_id.sh "$savefile_name" $game_id)
 
     if [[ $verbose == true ]]; then
         echo "Updating $savefile_name with ID $savefile_id"
     fi
 
     # Call your update script and pass the file as an argument
-    output=$(./update_save.sh "$existing_file" "$savefile_id")
+    output=$(./Save_Scripts/update_save.sh "$existing_file" "$savefile_id")
 
     # Get the exit code of the previous command
     exit_code=$?
