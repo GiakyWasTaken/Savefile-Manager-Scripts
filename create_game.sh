@@ -17,7 +17,7 @@ create_game_url=$API_URL"game"
 
 # Send create game request
 response=$(curl -s -X POST \
-    -H "Authorization: Bearer dsa" \
+    -H "Authorization: Bearer $API_TOKEN" \
     -H "Accept: application/json" \
     -H "Content-Type: application/json" \
     -d '{
