@@ -8,7 +8,7 @@ store_url=$API_URL"savefile"
 
 # Check if the file argument is provided
 if [ $# -eq 0 ]; then
-    echo "Please provide a file and relative game id as an argument."
+    echo "Please provide a file and relative console id or name as an argument."
     exit 1
 fi
 
@@ -22,17 +22,24 @@ if [ ! -f "$file" ]; then
     exit 1
 fi
 
-# Check if the game id is provided
+# Check if the console id or name is provided
 if [ -z "$1" ]; then
-    echo "Please provide the game ID as an argument."
+    echo "Please provide the console ID as an argument."
     exit 1
 fi
-# Check if the game id is a number
-if ! [[ $1 =~ ^[0-9]+$ ]]; then
-    echo "Game ID must be a number."
-    exit 1
+# Check if the argument is an id or a name
+if [[ $1 =~ ^[0-9]+$ ]]; then
+    console_id="$1"
+else
+    # Get the console id from the console name
+    console_id=$(./get_console_id.sh "$1")
+    # Check if the console id is found
+    if [ -z "$console_id" ]; then
+        echo "Console name not found"
+        exit 1
+    fi
+    console_name="$1"
 fi
-game_id="$1"
 shift
 
 # Parse command line options
@@ -55,7 +62,7 @@ response=$(curl -s -w "%{http_code}" -X POST \
     -H "Authorization: Bearer $API_TOKEN" \
     -H "Accept: application/json" \
     -F "savefile=@$file" \
-    -F "fk_id_game=$game_id" \
+    -F "fk_id_console=$console_id" \
     "$store_url")
 
 # Separate the HTTP status code from the response
@@ -91,4 +98,8 @@ if [[ $file_name == "" ]]; then
 fi
 
 # Print the file_name
-echo "Successfully uploaded $file_name with game ID = $game_id"
+if [ -n "$console_name" ]; then
+    echo "Successfully uploaded $file_name with the console = $console_name"
+else
+    echo "Successfully uploaded $file_name with console ID = $console_id"
+fi

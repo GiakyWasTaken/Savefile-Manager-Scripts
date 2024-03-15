@@ -45,5 +45,3 @@ fi
 
 # Echo the names separated by a newline
 echo "$names"
-
-# May change the script later...
