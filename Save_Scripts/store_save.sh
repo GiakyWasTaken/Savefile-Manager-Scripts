@@ -67,6 +67,7 @@ response=$(curl -s -w "%{http_code}" -X POST \
 # Separate the HTTP status code from the response
 http_code=${response: -3}
 response=${response::-3}
+response=${response//\\/}
 
 # Check if the --raw argument is provided
 if [[ $raw_response == true ]]; then
@@ -74,27 +75,29 @@ if [[ $raw_response == true ]]; then
     echo "$response"
 
     # Check if the response contains the file_name to determine the exit code
-    if [[ $response == *"file_name"* ]]; then
+    if [[ $http_code == 201 ]]; then
         exit 0
     else
         exit 1
     fi
 fi
 
-# Extract the id from the response
-console_id=$(echo "$response" | grep -oP '(?<="id":")[^"]+')
 
+# Check if the file already exists
 if [[ $http_code == 409 ]]; then
-    echo "File $file already exists"
+    echo "File \"$file\" already exists"
     exit 1
 fi
 
-# Check if the response contains the id
-if [[ $console_id == "" ]]; then
-    echo "Failed to upload $file"
+# Check the HTTP status code for success
+if ! [[ $http_code == 201 ]]; then
+    echo "Failed to upload \"$file\""
     "$(dirname "${BASH_SOURCE[0]}")/../http_codes.sh" "$http_code"
     exit 1
 fi
 
+# Extract the id from the response
+savefile_id=$(echo "$response" | grep -oP '(?<="id":)[^,}]*')
+
 # Print the id of the created savefile
-echo "$console_id"
+echo "$savefile_id"

@@ -89,4 +89,4 @@ if [[ $file_name == "" ]]; then
 fi
 
 # Print the file_name
-echo "Savefile with ID = $id_savefile locally $file_path$file_name updated"
+echo "Savefile with ID = $id_savefile locally \"$file_path$file_name\" updated"

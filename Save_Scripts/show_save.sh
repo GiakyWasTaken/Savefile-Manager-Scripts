@@ -62,4 +62,4 @@ if [[ $file_name == "" ]]; then
 fi
 
 # Echo the name separated by a newline
-echo "$file_path""$file_name"
+echo "\"$file_path$file_name\""
