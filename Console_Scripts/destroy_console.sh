@@ -61,6 +61,6 @@ if [[ $http_code == 200 ]]; then
     exit 0
 else
     echo "Failed to delete the console"
-    ./../http_codes.sh "$http_code"
+    "$(dirname "${BASH_SOURCE[0]}")/../http_codes.sh" "$http_code"
     exit 1
 fi

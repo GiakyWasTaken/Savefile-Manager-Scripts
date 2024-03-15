@@ -21,7 +21,7 @@ if [[ $2 =~ ^[0-9]+$ ]]; then
 fi
 
 # Get the json file from a script that indexes all savefiles from the API
-json_file=$(./index_saves.sh --raw)
+json_file=$("$(dirname "${BASH_SOURCE[0]}")/index_saves.sh" --raw)
 
 # Check if index_saves.sh failed
 if [[ $json_file == *"Failed"* ]]; then

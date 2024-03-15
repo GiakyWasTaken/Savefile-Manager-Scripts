@@ -32,7 +32,7 @@ if [[ $1 =~ ^[0-9]+$ ]]; then
     console_id="$1"
 else
     # Get the console id from the console name
-    console_id=$(./get_console_id.sh "$1")
+    console_id=$("$(dirname "${BASH_SOURCE[0]}")/get_console_id.sh" "$1")
     # Check if the console id is found
     if [ -z "$console_id" ]; then
         echo "Console name not found"
@@ -84,10 +84,15 @@ fi
 # Extract the id from the response
 console_id=$(echo "$response" | grep -oP '(?<="id":")[^"]+')
 
+if [[ $http_code == 409 ]]; then
+    echo "File $file already exists"
+    exit 1
+fi
+
 # Check if the response contains the id
 if [[ $console_id == "" ]]; then
     echo "Failed to upload $file"
-    ./../http_codes.sh "$http_code"
+    "$(dirname "${BASH_SOURCE[0]}")/../http_codes.sh" "$http_code"
     exit 1
 fi
 

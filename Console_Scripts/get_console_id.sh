@@ -7,7 +7,7 @@ if [ -z "$1" ]; then
 fi
 
 # Get the json file from a script that indexes all consoles from the API
-json_file=$(./index_consoles.sh --raw)
+json_file=$("$(dirname "${BASH_SOURCE[0]}")/index_consoles.sh" --raw)
 
 # Check if index_consoles.sh failed
 if [[ $json_file == *"Failed"* ]]; then

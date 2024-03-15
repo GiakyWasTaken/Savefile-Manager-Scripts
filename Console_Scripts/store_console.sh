@@ -54,7 +54,7 @@ fi
 console_id=$(echo "$response" | grep -oP '(?<="id":)[^,}]+')
 if [[ $console_id == "" ]]; then
     echo "Failed to create console"
-    ./../http_codes.sh "$http_code"
+    "$(dirname "${BASH_SOURCE[0]}")/../http_codes.sh" "$http_code"
     exit 1
 fi
 

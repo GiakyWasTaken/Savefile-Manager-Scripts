@@ -10,7 +10,7 @@ logout_url=$API_URL"logout"
 token=$API_TOKEN
 
 # Send logout request
-response=$(curl -X GET \
+response=$(curl -s -X GET \
     -H "Authorization: Bearer $token" \
     -H "Accept: application/json" \
     -H "Content-Type: application/json" \

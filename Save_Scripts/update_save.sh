@@ -79,13 +79,14 @@ fi
 
 # Extract the file_name from the response
 file_name=$(echo "$response" | grep -oP '(?<="file_name":")[^"]+')
+file_path=$(echo "$response" | grep -oP '(?<="file_path":")[^"]+':1)
 
 # Check if the response contains the file_name
 if [[ $file_name == "" ]]; then
     echo "Failed to update $file"
-    ./../http_codes.sh "$http_code"
+    "$(dirname "${BASH_SOURCE[0]}")/../http_codes.sh" "$http_code"
     exit 1
 fi
 
 # Print the file_name
-echo "Savefile with ID = $id_savefile named locally $file_name updated"
+echo "Savefile with ID = $id_savefile locally $file_path$file_name updated"
