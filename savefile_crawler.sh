@@ -3,21 +3,6 @@
 # Source the .env file
 source "$(dirname "${BASH_SOURCE[0]}")/.env"
 
-# Parse the directory where the crawler will look for savefiles from argument
-crawling_dir="$1"
-shift
-
-# Check if the directory is provided
-if [ -z "$crawling_dir" ]; then
-    echo "No directory provided"
-    exit 1
-fi
-# Check if the directory exists
-if [ ! -d "$crawling_dir" ]; then
-    echo "Directory $crawling_dir does not exist"
-    exit 1
-fi
-
 # Parse command line options
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -46,14 +31,14 @@ exit_code_0=0
 exit_code_1=0
 already_exists=0
 
-### To-do: Remove hardcoded game_id and dir, and get it from the game name or folder, maybe?
-game_id=1
+### To-do create a loop that goes through each path in the .env and associates it with a console
 crawling_dir=$NDS_SAVES_PATH
+console_id=1
 
 # Loop through each file and pass it as an argument to another script
 for file in "$crawling_dir"/*; do
     # Call your other script and pass the file as an argument
-    output=$(./Save_Scripts/store_save.sh "$file" "$game_id")
+    output=$(./Save_Scripts/store_save.sh "$file" "$console_id")
 
     # Get the exit code of the previous command
     exit_code=$?
@@ -115,7 +100,7 @@ for existing_file in "${existing_files[@]}"; do
     savefile_name=$(basename "$existing_file") 
 
     # Use the savefile name to get the savefile ID
-    savefile_id=$(./Save_Scripts/get_save_id.sh "$savefile_name" $game_id)
+    savefile_id=$(./Save_Scripts/get_save_id.sh "$savefile_name" "$console_id")
 
     if [[ $verbose == true ]]; then
         echo "Updating $savefile_name with ID $savefile_id"
