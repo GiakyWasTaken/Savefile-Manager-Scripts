@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Source the .env file
-source .env
+source "$(dirname "${BASH_SOURCE[0]}")/../.env"
 
 # API logout endpoint
 logout_url=$API_URL"logout"

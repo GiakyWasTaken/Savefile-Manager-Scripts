@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Source the .env file
-source .env
+source "$(dirname "${BASH_SOURCE[0]}")/../.env"
 
 # API login endpoint
 login_url=$API_URL"login"

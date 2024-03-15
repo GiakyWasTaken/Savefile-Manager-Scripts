@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Source the .env file
-source .env
+source "$(dirname "${BASH_SOURCE[0]}")/../.env"
 
 # API endpoint URL
 store_url=$API_URL"savefile"

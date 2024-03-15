@@ -10,7 +10,7 @@ fi
 name=$1
 
 # Source the .env file
-source .env
+source "$(dirname "${BASH_SOURCE[0]}")/../.env"
 
 # API endpoint URL
 create_game_url=$API_URL"game"

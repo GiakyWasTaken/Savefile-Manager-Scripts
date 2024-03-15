@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Source the .env file
-source .env
+source "$(dirname "${BASH_SOURCE[0]}")/.env"
 
 # Parse the directory where the crawler will look for savefiles from argument
 crawling_dir="$1"
