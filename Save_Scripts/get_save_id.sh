@@ -10,9 +10,6 @@ fi
 file_path="${1%/*}/"
 file_name="${1##*/}"
 
-echo "File path: $file_path"
-echo "File name: $file_name"
-
 # Check if the console name or id argument is provided
 if [ -z "$2" ]; then
     echo "Please provide the console name or ID as an argument"
@@ -22,9 +19,6 @@ fi
 if [[ $2 =~ ^[0-9]+$ ]]; then
     console_id_flag=true
 fi
-
-echo "Console name or ID: $2"
-echo "Console ID flag: $console_id_flag"
 
 # Get the json file from a script that indexes all savefiles from the API
 json_file=$(./index_saves.sh --raw)

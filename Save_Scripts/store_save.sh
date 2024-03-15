@@ -38,7 +38,6 @@ else
         echo "Console name not found"
         exit 1
     fi
-    console_name="$1"
 fi
 shift
 
@@ -81,25 +80,16 @@ if [[ $raw_response == true ]]; then
         exit 1
     fi
 fi
-# Extract the file_name from the response
-file_name=$(echo "$response" | grep -oP '(?<="file_name":")[^"]+')
 
-# Check if the response contains the file_name
-if [[ $file_name == "" ]]; then
+# Extract the id from the response
+console_id=$(echo "$response" | grep -oP '(?<="id":")[^"]+')
+
+# Check if the response contains the id
+if [[ $console_id == "" ]]; then
     echo "Failed to upload $file"
-    # Print the response if shorter than 5 lines
-    if [ "$(echo "$response" | wc -l)" -le 5 ]; then
-        echo "$response"
-    else
-        # Otherwise print the HTTP status code
-        ./../http_codes.sh "$http_code"
-    fi
+    ./../http_codes.sh "$http_code"
     exit 1
 fi
 
-# Print the file_name
-if [ -n "$console_name" ]; then
-    echo "Successfully uploaded $file_name with the console = $console_name"
-else
-    echo "Successfully uploaded $file_name with console ID = $console_id"
-fi
+# Print the id of the created savefile
+echo "$console_id"

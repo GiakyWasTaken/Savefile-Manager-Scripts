@@ -83,15 +83,9 @@ file_name=$(echo "$response" | grep -oP '(?<="file_name":")[^"]+')
 # Check if the response contains the file_name
 if [[ $file_name == "" ]]; then
     echo "Failed to update $file"
-    # Print the response if shorter than 5 lines
-    if [ "$(echo "$response" | wc -l)" -le 5 ]; then
-        echo "$response"
-    else
-        # Otherwise print the HTTP status code
-        ./../http_codes.sh "$http_code"
-    fi
+    ./../http_codes.sh "$http_code"
     exit 1
 fi
 
 # Print the file_name
-echo "Successfully updated savefile with ID = $id_savefile named locally $file_name"
+echo "Savefile with ID = $id_savefile named locally $file_name updated"

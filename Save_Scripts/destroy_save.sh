@@ -57,7 +57,7 @@ fi
 
 # Check if the request succeeded
 if [[ $http_code == 200 ]]; then
-    echo "Savefile successfully deleted"
+    echo "Savefile deleted"
     exit 0
 else
     echo "Failed to delete the savefile"
