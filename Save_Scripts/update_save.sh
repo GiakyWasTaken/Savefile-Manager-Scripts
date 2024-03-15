@@ -8,7 +8,7 @@ update_url=$API_URL"savefile"
 
 # Check if the file argument is provided
 if [ $# -eq 0 ]; then
-    echo "Please provide a file as an argument."
+    echo "Please provide a file as an argument"
     exit 1
 fi
 
@@ -28,7 +28,7 @@ shift
 
 # Check if the savefile id is provided and is a number
 if [[ $id_savefile == "" ]]; then
-    echo "Please provide a savefile id as an argument."
+    echo "Please provide a savefile id as an argument"
     exit 1
 elif ! [[ $id_savefile =~ ^[0-9]+$ ]]; then
     echo "Savefile id must be a number."

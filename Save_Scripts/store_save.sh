@@ -8,7 +8,7 @@ store_url=$API_URL"savefile"
 
 # Check if the file argument is provided
 if [ $# -eq 0 ]; then
-    echo "Please provide a file and relative console id or name as an argument."
+    echo "Please provide a file and relative console id or name as an argument"
     exit 1
 fi
 
@@ -24,7 +24,7 @@ fi
 
 # Check if the console id or name is provided
 if [ -z "$1" ]; then
-    echo "Please provide the console ID as an argument."
+    echo "Please provide the console ID as an argument"
     exit 1
 fi
 # Check if the argument is an id or a name

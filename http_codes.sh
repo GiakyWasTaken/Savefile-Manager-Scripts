@@ -2,13 +2,13 @@
 
 # Check if an argument is provided
 if [ $# -eq 0 ]; then
-    echo "Please provide an HTTP status code as an argument."
+    echo "Please provide an HTTP status code as an argument"
     exit 1
 fi
 
 # Check if the provided argument is a number
 if ! [[ $1 =~ ^[0-9]+$ ]]; then
-    echo "HTTP status code must be a number."
+    echo "HTTP status code must be a number"
     exit 1
 fi
 
