@@ -4,20 +4,20 @@
 source "$(dirname "${BASH_SOURCE[0]}")/../.env"
 
 # API endpoint URL
-game_destroy_url=$API_URL"game"
+console_destroy_url=$API_URL"console"
 
-# Get the game id from the argument
-game_id="$1"
+# Get the console id from the argument
+console_id="$1"
 shift
 
-# Check if the game id is provided
-if [ -z "$game_id" ]; then
-    echo "Please provide the game ID as an argument"
+# Check if the console id is provided
+if [ -z "$console_id" ]; then
+    echo "Please provide the console ID as an argument"
     exit 1
 fi
-# Check if the game id is a number
-if ! [[ $game_id =~ ^[0-9]+$ ]]; then
-    echo "Game ID must be a number"
+# Check if the console id is a number
+if ! [[ $console_id =~ ^[0-9]+$ ]]; then
+    echo "Console ID must be a number"
     exit 1
 fi
 
@@ -36,15 +36,15 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Add the game id to the API endpoint URL
-game_destroy_url="$game_destroy_url/$game_id"
+# Add the console id to the API endpoint URL
+console_destroy_url="$console_destroy_url/$console_id"
 
-# Send delete game request
+# Send delete console request
 response=$(curl -s -w "%{http_code}" -X DELETE \
     -H "Authorization: Bearer $API_TOKEN" \
     -H "Accept: application/json" \
     -H "Content-Type: application/json" \
-    "$game_destroy_url")
+    "$console_destroy_url")
 
 # Separate the HTTP status code from the response
 http_code=${response: -3}
@@ -56,11 +56,11 @@ if [[ $verbose == true ]]; then
 fi
 
 # Check if the request succeeded
-if [[ $http_code == 204 ]]; then
-    echo "Game successfully deleted"
+if [[ $http_code == 200 ]]; then
+    echo "Console deleted"
     exit 0
 else
-    echo "Failed to delete the game"
+    echo "Failed to delete the console"
     ./../http_codes.sh "$http_code"
     exit 1
 fi

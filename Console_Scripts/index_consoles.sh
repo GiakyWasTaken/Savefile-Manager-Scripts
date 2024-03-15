@@ -4,7 +4,7 @@
 source "$(dirname "${BASH_SOURCE[0]}")/../.env"
 
 # API endpoint URL
-game_index_url=$API_URL"game"
+console_index_url=$API_URL"console"
 
 # Parse command line options
 while [[ $# -gt 0 ]]; do
@@ -21,12 +21,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Send index games request
+# Send index consoles request
 response=$(curl -s -X GET \
     -H "Authorization: Bearer $API_TOKEN" \
     -H "Accept: application/json" \
     -H "Content-Type: application/json" \
-    "$game_index_url")
+    "$console_index_url")
 
 # Check if the --raw option is specified
 if [[ $raw_response == true ]]; then
@@ -35,10 +35,10 @@ if [[ $raw_response == true ]]; then
 fi
 
 # Extract the names from the JSON response using pattern matching
-names=$(echo "$response" | grep -o '"name":"[^"]*"' | cut -d'"' -f4)
+names=$(echo "$response" | grep -o '"console_name":"[^"]*"' | cut -d'"' -f4)
 
 if [[ $names == "" ]]; then
-    echo "Failed to get the index of games"
+    echo "Failed to get the index of consoles"
     echo "$response"
     exit 1
 fi
