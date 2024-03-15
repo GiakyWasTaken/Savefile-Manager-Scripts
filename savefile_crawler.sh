@@ -45,7 +45,8 @@ console_id=1
 log_output=$("$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/login_api.sh")
 if [[ $log_output == *"Token"* ]]; then
     # Retrieve the token from the log output
-    export API_TOKEN="$(echo "$log_output" | grep -oP '(?<=Token: ).*')"
+    API_TOKEN="$(echo "$log_output" | grep -oP '(?<=Token: ).*')"
+    export API_TOKEN
 
     if [[ $verbose == true ]]; then
         echo "Logged in"
