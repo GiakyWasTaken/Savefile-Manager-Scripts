@@ -56,11 +56,30 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Separate the file name from the path
+file_name=$(basename "$file")
+abs_path=$(dirname "$file")
+
+# Subtract from the absolute path the save paths
+for save_path in "${SAVES_PATHS[@]}"; do
+    if [[ "$abs_path" == "$save_path"* ]]; then
+        file_path="${abs_path#"$save_path"}"
+        break
+    fi
+done
+
+# Check if the file path is an empty string
+if [[ $file_path == "" ]]; then
+    file_path="/"
+fi
+
 # Send store file request
 response=$(curl -s -w "%{http_code}" -X POST \
     -H "Authorization: Bearer $API_TOKEN" \
     -H "Accept: application/json" \
     -F "savefile=@$file" \
+    -F "file_name=$file_name" \
+    -F "file_path=$file_path" \
     -F "fk_id_console=$console_id" \
     "$store_url")
 
