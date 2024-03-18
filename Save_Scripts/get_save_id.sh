@@ -10,6 +10,11 @@ fi
 file_path="${1%/*}/"
 file_name="${1##*/}"
 
+# Check if the file path is an empty string and set it to / if it is
+if [[ $file_path == "$file_name/" ]]; then
+    file_path="/"
+fi
+
 # Check if the console name or id argument is provided
 if [ -z "$2" ]; then
     echo "Please provide the console name or ID as an argument"
