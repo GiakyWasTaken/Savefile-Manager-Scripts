@@ -73,7 +73,7 @@ for save_path in "${SAVES_PATHS[@]}"; do
     # Get the console name from the .env file
     console_name="${CONSOLE_NAMES[$saves_array_index]}"
 
-    echo "Crawling \"$save_path\" for \"$console_name\" saves"
+    echo "Crawling \"$console_name\" saves inside \"$save_path\""
 
     output=$("$(dirname "${BASH_SOURCE[0]}")/Console_Scripts/get_console_id.sh" "$console_name")
 
@@ -115,7 +115,9 @@ for save_path in "${SAVES_PATHS[@]}"; do
 
         # Check if $file is a directory
         if [[ -d "$file" ]]; then
-            echo "Now entering directory \"$file\""
+            if [[ verbose == true ]]; then
+                echo "Now entering directory \"$file\""
+            fi
             continue
         fi
 
