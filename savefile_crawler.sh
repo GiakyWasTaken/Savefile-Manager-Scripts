@@ -8,14 +8,17 @@ while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
         --auto-update|-a)
+            # Auto-update already existing files only if the local file is newer
             auto_update=true
             shift
             ;;
         --force-update|-f)
+            # Force update the already existing files even if the remote file is newer
             force_update=true
             shift
             ;;
         --ignore-existing|-i)
+            # Ignore updating already existing files
             ignore_existing=true
             shift
             ;;
@@ -40,11 +43,6 @@ exit_code_0=0
 exit_code_1=0
 already_exists=0
 
-### To-do create a loop that goes through each path in the .env
-crawling_dir=$PATH_SAVES_NDS
-console_name=$CONSOLE_NAME_NDS
-# console_id=$ID_CONSOLE_NDS
-
 # Log in to the API
 log_output=$("$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/login_api.sh")
 if [[ $log_output == *"Token"* ]]; then
@@ -63,83 +61,110 @@ else
     exit 1
 fi
 
-# Check if the console already exist on the db
-if [[ $("$(dirname "${BASH_SOURCE[0]}")/Console_Scripts/get_console_id.sh" "$console_name") == *"not found"* ]]; then
-    # Create the console
-    output=$("$(dirname "${BASH_SOURCE[0]}")/Console_Scripts/store_console.sh" "$console_name" -v)
-    
-    # Get the exit code of the previous command
-    exit_code=$?
+saves_array_index=0
 
-    # Check if the verbose argument is provided
-    if [[ $very_verbose == true ]]; then
-        echo "$output"
-    fi
-
-    # Check the exit code and exit the script if it failed
-    if [ $exit_code -ne 0 ]; then
+for save_path in "${SAVES_PATHS[@]}"; do
+    # Check if the path exists
+    if [[ ! -d "$save_path" ]]; then
+        echo "Path \"$save_path\" does not exist"
         exit 1
     fi
 
-    # Get the console id from the output
-    console_id=$(echo "$output" | grep -oP '(?<="id":)[^,}]+')
-    if [[ $console_id == "" ]]; then
-        echo "Failed to get console id"
-        exit 1
-    fi
+    # Get the console name from the .env file
+    console_name="${CONSOLE_NAMES[$saves_array_index]}"
 
-    if [[ $verbose == true ]]; then
-        echo "Console \"$console_name\" created with id $console_id"
-    fi
+    echo "Crawling \"$save_path\" for \"$console_name\" saves"
 
-    # # Save the console id to the .env file
-    # echo "ID_CONSOLE_NDS=$console_id" >> "$(dirname "${BASH_SOURCE[0]}")/.env"
+    output=$("$(dirname "${BASH_SOURCE[0]}")/Console_Scripts/get_console_id.sh" "$console_name")
 
-fi
+    # Check if the console already exist on the db
+    if [[ $output == *"not found"* ]]; then
+        # Create the console
+        output=$("$(dirname "${BASH_SOURCE[0]}")/Console_Scripts/store_console.sh" "$console_name" -v)
+        
+        # Get the exit code of the previous command
+        exit_code=$?
 
-# Loop through each file and pass it as an argument to another script
-for file in "$crawling_dir"/*; do
-
-    if [[ $very_verbose == true ]]; then
-        echo "Storing \"$file\" to console id $console_id"
-    fi
-    
-    # Call your other script and pass the file as an argument
-    output=$("$(dirname "${BASH_SOURCE[0]}")/Save_Scripts/store_save.sh" "$file" "$console_id" --raw)
-
-    # Get the exit code of the previous command
-    exit_code=$?
-
-    # Check if the verbose argument is provided
-    if [[ $verbose == true ]]; then
-        echo "$output"
-    fi
-
-    # Check the exit code and increment the respective counter
-    if [ $exit_code -eq 0 ]; then
-        exit_code_0=$((exit_code_0 + 1))
-    else
-        # Check if is auth error
-        # If the file already exists save the file name to an array
-        if [[ $output == *"already exists"* ]]; then
-            # Add the file name to the array
-            existing_files+=("$file")
-            # Increment the already_exists counter
-            already_exists=$((already_exists + 1))
+        # Check if the verbose argument is provided
+        if [[ $very_verbose == true ]]; then
+            echo "$output"
         fi
-        exit_code_1=$((exit_code_1 + 1))
+
+        # Check the exit code and exit the script if it failed
+        if [ $exit_code -ne 0 ]; then
+            exit 1
+        fi
+
+        # Get the console id from the output
+        console_id=$(echo "$output" | grep -oP '(?<="id":)[^,}]+')
+        if [[ $console_id == "" ]]; then
+            echo "Failed to get console id"
+            exit 1
+        fi
+
+        if [[ $verbose == true ]]; then
+            echo "Console \"$console_name\" created with id $console_id"
+        fi
+    else
+        console_id=$output
     fi
+
+    # Loop through each file in the directory and subdirectories
+    IFS=$'\n'; set -f
+    for file in $(find "$save_path"); do
+
+        # Check if $file is a directory
+        if [[ -d "$file" ]]; then
+            echo "Now entering directory \"$file\""
+            continue
+        fi
+
+        if [[ $very_verbose == true ]]; then
+            echo "Storing \"$file\" to console $console_name with id $console_id"
+        fi
+
+        # Call your other script and pass the file as an argument
+        output=$("$(dirname "${BASH_SOURCE[0]}")/Save_Scripts/store_save.sh" "$file" "$console_id" --raw)
+
+        # Get the exit code of the previous command
+        exit_code=$?
+
+        # Check if the verbose argument is provided
+        if [[ $verbose == true ]]; then
+            echo "$output"
+        fi
+
+        # Check the exit code and increment the respective counter
+        if [[ $exit_code -eq 0 ]]; then
+            exit_code_0=$((exit_code_0 + 1))
+
+        # If the file already exists save the file name to an array
+        elif [[ $output == *"already exists"* ]]; then
+                # Add the console id and the file name to the array
+                existing_files+=("$console_id")
+                existing_files+=("$file")
+                # Increment the already_exists counter
+                already_exists=$((already_exists + 1))
+        else
+            exit_code_1=$((exit_code_1 + 1))
+        fi
+    done
+
+    unset IFS; set +f
+
+    # Increment the saves_array_index
+    saves_array_index=$((saves_array_index + 1))
 done
 
 # Print the count of exit codes
-echo "Files successfully uploaded: $exit_code_0 / $((exit_code_0 + exit_code_1))"
-echo "Files failed to upload: $exit_code_1 / $((exit_code_0 + exit_code_1))"
-echo "Files that already exist: $already_exists / $exit_code_1"
+echo "Files successfully uploaded: $exit_code_0 / $((exit_code_0 + exit_code_1 + already_exists))"
+echo "Files failed to upload: $exit_code_1 / $((exit_code_0 + exit_code_1 + already_exists))"
+echo "Files that already exist: $already_exists / $((exit_code_0 + exit_code_1 + already_exists))"
 
 # Check if the ignore-existing argument is provided or if there are no existing files
 if [[ $ignore_existing == true || ${#existing_files[@]} -eq 0 ]]; then
     # Log out of the API
-    log_output=$(. "$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/logout_api.sh")
+    log_output=$("$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/logout_api.sh")
     unset API_TOKEN
     if [[ $verbose == true ]]; then
         if [[ $log_output == *"Logged out"* ]]; then
@@ -192,17 +217,32 @@ exit_code_1=0
 skip_update=0
 
 # Loop through each existing file and pass it as an argument to the update script
-for updated_file in "${existing_files[@]}"; do
+for file_to_update in "${existing_files[@]}"; do
 
-    # Subtract from updated_file the path to the savefile
-    file_path="${updated_file#"$crawling_dir"}"
+    # Check if the file_to_update is a console id
+    if [[ $file_to_update =~ ^[0-9]+$ ]]; then
+        console_id=$file_to_update
+        continue
+    fi
+
+    # Subtract from file_to_update the path to the savefile
+    for save_path in "${SAVES_PATHS[@]}"; do
+        if [[ "$file_to_update" == "$save_path"* ]]; then
+            file_path="${file_to_update#"$save_path"}"
+            break
+        fi
+    done
 
     # Check which file is newer between the local and the remote
     if ! [[ $force_update == true ]]; then
         # Get the savefile ID from the file path
         savefile_id=$("$(dirname "${BASH_SOURCE[0]}")/Save_Scripts/get_save_id.sh" "$file_path" "$console_id")
+        if [[ $savefile_id == *"not found"* ]]; then
+            echo "Failed to get the savefile ID of \"$file_path\" with console ID $console_id"
+            exit 1
+        fi
         # Get the last modified date of the local file
-        local_date=$(date -r "$updated_file" +%s)
+        local_date=$(date -r "$file_to_update" +%s)
         # Get the last modified date of the remote file
         remote_file=$("$(dirname "${BASH_SOURCE[0]}")/Save_Scripts/show_save.sh" "$savefile_id" --raw)
         # Check if the remote file is newer
@@ -211,7 +251,7 @@ for updated_file in "${existing_files[@]}"; do
         if [[ $local_date -le $remote_date ]]; then
             # Skip the update if the remote file is newer
             if [[ $verbose == true ]]; then
-                echo "Skipping \"$file_path\" because the remote file is newer or the same"
+                echo "Skipping \"$file_to_update\" because the remote file is newer or the same"
                 skip_update=$((skip_update + 1))
             fi
             continue
@@ -223,14 +263,14 @@ for updated_file in "${existing_files[@]}"; do
     savefile_id=$("$(dirname "${BASH_SOURCE[0]}")/Save_Scripts/get_save_id.sh" "$file_path" "$console_id")
 
     if [[ $verbose == true ]]; then
-        echo "Updating \"$file_path\" with ID $savefile_id"
+        echo "Updating \"$file_to_update\" with ID $savefile_id"
     fi
 
     # Call your update script and pass the file as an argument
     if [[ $very_verbose == true ]]; then
-        output=$("$(dirname "${BASH_SOURCE[0]}")/Save_Scripts/update_save.sh" "$updated_file" "$savefile_id" --raw)
+        output=$("$(dirname "${BASH_SOURCE[0]}")/Save_Scripts/update_save.sh" "$file_to_update" "$savefile_id" --raw)
     else
-        output=$("$(dirname "${BASH_SOURCE[0]}")/Save_Scripts/update_save.sh" "$updated_file" "$savefile_id")
+        output=$("$(dirname "${BASH_SOURCE[0]}")/Save_Scripts/update_save.sh" "$file_to_update" "$savefile_id")
     fi
 
     # Get the exit code of the previous command
