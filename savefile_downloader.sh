@@ -28,10 +28,8 @@ if [[ $log_output == *"Token"* ]]; then
     # Retrieve the token from the log output
     API_TOKEN="$(echo "$log_output" | grep -oP '(?<=Token: ).*')"
     export API_TOKEN
-
-    echo "Logged in"
-
     if [[ $verbose == true ]]; then
+        echo "Logged in"
         echo "$log_output"
     fi
 else
@@ -127,6 +125,11 @@ for console_name in "${CONSOLE_NAMES[@]}"; do
             continue
         fi
 
+        # Check if the Downloads directory exists and is not empty
+        if [[ ! -d "$(dirname "${BASH_SOURCE[0]}")/Downloads/" ]] || [[ -z "$(ls -A "$(dirname "${BASH_SOURCE[0]}")/Downloads/")" ]]; then
+            echo "No files to copy from downloads directory"
+            continue
+        fi
         # Check if the savefile path exists
         if [[ ! -d "$savefile_path" ]]; then
             echo "Destination folder does not exist: $savefile_path"

@@ -115,7 +115,7 @@ for save_path in "${SAVES_PATHS[@]}"; do
 
         # Check if $file is a directory
         if [[ -d "$file" ]]; then
-            if [[ verbose == true ]]; then
+            if [[ $verbose == true ]]; then
                 echo "Now entering directory \"$file\""
             fi
             continue

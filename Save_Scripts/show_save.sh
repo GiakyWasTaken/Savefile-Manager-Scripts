@@ -76,7 +76,14 @@ echo "\"$file_path$file_name\""
 
 if [[ $download == true ]]; then
     # Download the file from the API endpoint and overwrite if it already exists
-    wget -q --content-disposition -P "$(dirname "${BASH_SOURCE[0]}")/../Downloads/$file_path" -N "$savefile_show_url"
+    wget -q --content-disposition -P "$(dirname "${BASH_SOURCE[0]}")/../Downloads/$file_path" -N --header="Authorization: Bearer $API_TOKEN" "$savefile_show_url"
+
+    # Check if the download was successful
+    if [[ $? -ne 0 ]]; then
+        echo "Failed to download savefile $savefile_id"
+        exit 1
+    fi
+
     if [[ $verbose == true ]]; then
         echo "Downloaded savefile $savefile_id into \"./Downloads$file_path$file_name\""
     fi
