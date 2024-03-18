@@ -21,7 +21,7 @@ console_id=$(echo "$json_file" | jq -r --arg name "$1" '.[] | select(.console_na
 
 # Check if the console ID is found
 if [ -z "$console_id" ]; then
-    echo "console not found"
+    echo "Console not found"
     exit 1
 fi
 

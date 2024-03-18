@@ -41,13 +41,9 @@ exit_code_1=0
 already_exists=0
 
 ### To-do create a loop that goes through each path in the .env
-### associates it with a console name and if it doesn't exist
-### creates a new console and associates its id
 crawling_dir=$PATH_SAVES_NDS
 console_name=$CONSOLE_NAME_NDS
-console_id=$ID_CONSOLE_NDS
-
-
+# console_id=$ID_CONSOLE_NDS
 
 # Log in to the API
 log_output=$("$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/login_api.sh")
@@ -65,6 +61,40 @@ if [[ $log_output == *"Token"* ]]; then
 else
     echo "Failed to log in"
     exit 1
+fi
+
+# Check if the console already exist on the db
+if [[ $("$(dirname "${BASH_SOURCE[0]}")/Console_Scripts/get_console_id.sh" "$console_name") == *"not found"* ]]; then
+    # Create the console
+    output=$("$(dirname "${BASH_SOURCE[0]}")/Console_Scripts/store_console.sh" "$console_name" -v)
+    
+    # Get the exit code of the previous command
+    exit_code=$?
+
+    # Check if the verbose argument is provided
+    if [[ $very_verbose == true ]]; then
+        echo "$output"
+    fi
+
+    # Check the exit code and exit the script if it failed
+    if [ $exit_code -ne 0 ]; then
+        exit 1
+    fi
+
+    # Get the console id from the output
+    console_id=$(echo "$output" | grep -oP '(?<="id":)[^,}]+')
+    if [[ $console_id == "" ]]; then
+        echo "Failed to get console id"
+        exit 1
+    fi
+
+    if [[ $verbose == true ]]; then
+        echo "Console \"$console_name\" created with id $console_id"
+    fi
+
+    # # Save the console id to the .env file
+    # echo "ID_CONSOLE_NDS=$console_id" >> "$(dirname "${BASH_SOURCE[0]}")/.env"
+
 fi
 
 # Loop through each file and pass it as an argument to another script
