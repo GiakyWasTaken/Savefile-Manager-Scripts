@@ -25,6 +25,14 @@ while [[ $# -gt 0 ]]; do
         raw_response=true
         shift
         ;;
+    --verbose|-v)
+        verbose=true
+        shift
+        ;;
+    --download|-d)
+        download=true
+        shift
+        ;;
     *)
         echo "Unknown option: $key"
         exit 1
@@ -57,9 +65,19 @@ file_path=$(echo "$response" | grep -o '"file_path":"[^"]*"' | cut -d'"' -f4)
 
 if [[ $file_name == "" ]]; then
     echo "Failed to get savefile"
-    echo "$response"
+    if [[ $verbose == true ]]; then
+        echo "$response"
+    fi
     exit 1
 fi
 
 # Echo the name separated by a newline
 echo "\"$file_path$file_name\""
+
+if [[ $download == true ]]; then
+    # Download the file from the API endpoint and overwrite if it already exists
+    wget -q --content-disposition -P "$(dirname "${BASH_SOURCE[0]}")/../Downloads/$file_path" -N "$savefile_show_url"
+    if [[ $verbose == true ]]; then
+        echo "Downloaded savefile $savefile_id into \"./Downloads$file_path$file_name\""
+    fi
+fi

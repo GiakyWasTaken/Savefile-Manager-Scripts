@@ -67,7 +67,7 @@ for save_path in "${SAVES_PATHS[@]}"; do
     # Check if the path exists
     if [[ ! -d "$save_path" ]]; then
         echo "Path \"$save_path\" does not exist"
-        exit 1
+        continue
     fi
 
     # Get the console name from the .env file
@@ -291,7 +291,6 @@ done
 
 # Log out of the API
 log_output=$("$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/logout_api.sh")
-unset API_TOKEN
 if [[ $verbose == true ]]; then
     if [[ $log_output == *"Logged out"* ]]; then
         echo "Logged out"

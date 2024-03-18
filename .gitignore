@@ -37,3 +37,6 @@ temp/
 
 # .env file
 .env
+
+# Download files
+Downloads/
