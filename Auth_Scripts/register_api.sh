@@ -3,6 +3,21 @@
 # Source the .env file
 source "$(dirname "${BASH_SOURCE[0]}")/../.env"
 
+# Parse command line options
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+    --raw)
+        raw_response=true
+        shift
+        ;;
+    *)
+        echo "Unknown option: $key"
+        exit 1
+        ;;
+    esac
+done
+
 # API registration endpoint
 register_url=$API_URL"register"
 
@@ -17,6 +32,11 @@ response=$(curl -s -X POST \
         "password_confirmation": "'"$PASSWORD"'"
     }' \
     "$register_url")
+
+if [[ $raw_response == true ]]; then
+    echo "$response"
+    exit 0
+fi
 
 # Extract the token from the response
 api_token=$(echo "$response" | grep -oP '(?<="token":")[^"]+')
