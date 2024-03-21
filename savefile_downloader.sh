@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Create and write a log file
+current_time=$(date "+%Y.%m.%d-%H.%M.%S")
+exec > >(tee -i "./log/savefile_downloader_$current_time.log")
+
 # Source the .env file
 source "$(dirname "${BASH_SOURCE[0]}")/.env"
 

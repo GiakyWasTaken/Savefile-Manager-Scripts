@@ -17,7 +17,7 @@ response=$(curl -s -X GET \
     "$logout_url")
 
 # Check if the response contains "Logged out"
-if [[ $response == *"Logged out"* ]]; then
+if [[ $response == *"logged out"* ]]; then
     echo "Logged out"
 else
     echo "Failed to log out"

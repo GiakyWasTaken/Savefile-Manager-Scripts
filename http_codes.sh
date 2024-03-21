@@ -79,7 +79,7 @@ status_code=$1
 
 # Check if the provided status code exists in the array
 if [ ${http_codes[$status_code]+_} ]; then
-    echo "HTTP $status_code: ${http_codes[$status_code]}"
+    echo "HTTP status code $status_code: ${http_codes[$status_code]}"
 else
     echo "Unknown HTTP status code: $status_code"
 fi

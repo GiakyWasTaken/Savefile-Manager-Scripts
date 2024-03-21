@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Create and write a log file
+current_time=$(date "+%Y.%m.%d-%H.%M.%S")
+exec > >(tee -i "./log/savefile_crawler_$current_time.log")
+
 # Source the .env file
 source "$(dirname "${BASH_SOURCE[0]}")/.env"
 
@@ -169,7 +173,7 @@ if [[ $ignore_existing == true || ${#existing_files[@]} -eq 0 ]]; then
     log_output=$("$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/logout_api.sh")
     unset API_TOKEN
     if [[ $verbose == true ]]; then
-        if [[ $log_output == *"Logged out"* ]]; then
+        if [[ $log_output == *"logged out"* ]]; then
             echo "Logged out"
         else
             echo "Failed to log out"
@@ -197,7 +201,7 @@ if [[ $auto_update != true ]]; then
         log_output=$("$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/logout_api.sh")
         unset API_TOKEN
         if [[ $verbose == true ]]; then
-            if [[ $log_output == *"Logged out"* ]]; then
+            if [[ $log_output == *"logged out"* ]]; then
                 echo "Logged out"
             else
                 echo "Failed to log out"
@@ -294,7 +298,7 @@ done
 # Log out of the API
 log_output=$("$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/logout_api.sh")
 if [[ $verbose == true ]]; then
-    if [[ $log_output == *"Logged out"* ]]; then
+    if [[ $log_output == *"logged out"* ]]; then
         echo "Logged out"
     else
         echo "Failed to log out"
