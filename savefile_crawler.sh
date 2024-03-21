@@ -2,7 +2,7 @@
 
 # Create and write a log file
 current_time=$(date "+%Y.%m.%d-%H.%M.%S")
-exec > >(tee -i "./log/savefile_crawler_$current_time.log")
+exec > >(tee -i "$(dirname "${BASH_SOURCE[0]}")/log/savefile_crawler_$current_time.log")
 
 # Source the .env file
 source "$(dirname "${BASH_SOURCE[0]}")/.env"
@@ -96,14 +96,14 @@ for save_path in "${SAVES_PATHS[@]}"; do
 
         # Check the exit code and exit the script if it failed
         if [ $exit_code -ne 0 ]; then
-            exit 1
+            continue
         fi
 
         # Get the console id from the output
         console_id=$(echo "$output" | grep -oP '(?<="id":)[^,}]+')
         if [[ $console_id == "" ]]; then
             echo "Failed to get console id"
-            exit 1
+            continue
         fi
 
         if [[ $verbose == true ]]; then
@@ -173,7 +173,7 @@ if [[ $ignore_existing == true || ${#existing_files[@]} -eq 0 ]]; then
     log_output=$("$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/logout_api.sh")
     unset API_TOKEN
     if [[ $verbose == true ]]; then
-        if [[ $log_output == *"logged out"* ]]; then
+        if [[ $log_output == *"Logged out"* ]]; then
             echo "Logged out"
         else
             echo "Failed to log out"
@@ -201,7 +201,7 @@ if [[ $auto_update != true ]]; then
         log_output=$("$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/logout_api.sh")
         unset API_TOKEN
         if [[ $verbose == true ]]; then
-            if [[ $log_output == *"logged out"* ]]; then
+            if [[ $log_output == *"Logged out"* ]]; then
                 echo "Logged out"
             else
                 echo "Failed to log out"
@@ -245,7 +245,7 @@ for file_to_update in "${existing_files[@]}"; do
         savefile_id=$("$(dirname "${BASH_SOURCE[0]}")/Save_Scripts/get_save_id.sh" "$file_path" "$console_id")
         if [[ $savefile_id == *"not found"* ]]; then
             echo "Failed to get the savefile ID of \"$file_path\" with console ID $console_id"
-            exit 1
+            continue
         fi
         # Get the last modified date of the local file
         local_date=$(date -r "$file_to_update" +%s)
@@ -298,7 +298,7 @@ done
 # Log out of the API
 log_output=$("$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/logout_api.sh")
 if [[ $verbose == true ]]; then
-    if [[ $log_output == *"logged out"* ]]; then
+    if [[ $log_output == *"Logged out"* ]]; then
         echo "Logged out"
     else
         echo "Failed to log out"

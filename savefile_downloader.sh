@@ -2,7 +2,7 @@
 
 # Create and write a log file
 current_time=$(date "+%Y.%m.%d-%H.%M.%S")
-exec > >(tee -i "./log/savefile_downloader_$current_time.log")
+exec > >(tee -i "$(dirname "${BASH_SOURCE[0]}")/log/savefile_downloader_$current_time.log")
 
 # Source the .env file
 source "$(dirname "${BASH_SOURCE[0]}")/.env"
@@ -158,6 +158,20 @@ for console_name in "${CONSOLE_NAMES[@]}"; do
     env_arrays_index=$((env_arrays_index + 1))
 
 done
+
+# Log out of the API
+log_output=$("$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/logout_api.sh")
+if [[ $verbose == true ]]; then
+    if [[ $log_output == *"Logged out"* ]]; then
+        echo "Logged out"
+    else
+        echo "Failed to log out"
+        if [[ $very_verbose == true ]]; then
+            echo "$log_output"
+        fi
+        exit 1
+    fi
+fi
 
 # Print the results
 echo "Files skipped: $skipped_files / $((successful_downloads + failed_downloads + skipped_files))"
