@@ -125,8 +125,11 @@ for save_path in "${SAVES_PATHS[@]}"; do
             continue
         fi
 
+        # Get the last modified date of the file
+        file_timestamp=$(date -r "$file" +"%Y-%m-%dT%H:%M:%S")
+
         if [[ $very_verbose == true ]]; then
-            echo "Storing \"$file\" to console $console_name with id $console_id"
+            echo "Storing \"$file\" updated at $file_timestamp to console $console_name with id $console_id"
         fi
 
         # Call your other script and pass the file as an argument
@@ -148,6 +151,7 @@ for save_path in "${SAVES_PATHS[@]}"; do
         elif [[ $output == *"already exists"* ]]; then
                 # Add the console id and the file name to the array
                 existing_files+=("$console_id")
+                existing_files+=("$file_timestamp")
                 existing_files+=("$file")
                 # Increment the already_exists counter
                 already_exists=$((already_exists + 1))
@@ -225,9 +229,13 @@ skip_update=0
 # Loop through each existing file and pass it as an argument to the update script
 for file_to_update in "${existing_files[@]}"; do
 
-    # Check if the file_to_update is a console id
+    # Check if the file_to_update is a console id or a timestamp
     if [[ $file_to_update =~ ^[0-9]+$ ]]; then
         console_id=$file_to_update
+        continue
+    fi
+    if [[ $file_to_update =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$ ]]; then
+        file_timestamp=$file_to_update
         continue
     fi
 
@@ -247,6 +255,7 @@ for file_to_update in "${existing_files[@]}"; do
             echo "Failed to get the savefile ID of \"$file_path\" with console ID $console_id"
             continue
         fi
+        
         # Get the last modified date of the local file
         local_date=$(date -r "$file_to_update" +%s)
         # Get the last modified date of the remote file
@@ -254,15 +263,15 @@ for file_to_update in "${existing_files[@]}"; do
         # Check if the remote file is newer
         remote_date=$(grep -oP '(?<=updated_at":")[^"]*' <<< "$remote_file")
         remote_date=$(date -d "$remote_date" +%s)
+
         if [[ $local_date -le $remote_date ]]; then
-            # Skip the update if the remote file is newer
+            # Skip the update if the local file is older or the same
             if [[ $verbose == true ]]; then
                 echo "Skipping \"$file_to_update\" because the remote file is newer or the same"
                 skip_update=$((skip_update + 1))
             fi
             continue
         fi
-        
     fi
 
     # Use the savefile name to get the savefile ID
@@ -274,9 +283,9 @@ for file_to_update in "${existing_files[@]}"; do
 
     # Call your update script and pass the file as an argument
     if [[ $very_verbose == true ]]; then
-        output=$("$(dirname "${BASH_SOURCE[0]}")/Save_Scripts/update_save.sh" "$file_to_update" "$savefile_id" --raw)
+        output=$("$(dirname "${BASH_SOURCE[0]}")/Save_Scripts/update_save.sh" "$file_to_update" "$savefile_id" "$file_timestamp" --raw)
     else
-        output=$("$(dirname "${BASH_SOURCE[0]}")/Save_Scripts/update_save.sh" "$file_to_update" "$savefile_id")
+        output=$("$(dirname "${BASH_SOURCE[0]}")/Save_Scripts/update_save.sh" "$file_to_update" "$savefile_id" "$file_timestamp")
     fi
 
     # Get the exit code of the previous command

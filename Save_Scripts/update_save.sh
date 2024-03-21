@@ -8,7 +8,7 @@ update_url=$API_URL"savefile"
 
 # Check if the file argument is provided
 if [ $# -eq 0 ]; then
-    echo "Please provide a file as an argument"
+    echo "Please provide a file, a savefile id and a timestamp as an argument"
     exit 1
 fi
 
@@ -35,6 +35,21 @@ elif ! [[ $id_savefile =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
+# Get the timestamp from the argument
+update_timestamp="$1"
+shift
+
+# Check if the timestamp is provided
+if [[ $update_timestamp == "" ]]; then
+    update_timestamp=$(date +"%Y-%m-%dT%H:%M:%S")
+fi
+
+# Check if the timestamp is in a valid format (Y-m-d H:i:s)
+if ! [[ $update_timestamp =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$ ]]; then
+    echo "Timestamp must be in the format Y-m-d H:i:s."
+    exit 1
+fi
+
 # Add the savefile id to the URL
 update_url="$update_url/$id_savefile"
 
@@ -58,6 +73,7 @@ response=$(curl -s -w "%{http_code}" -X POST \
     -H "Authorization: Bearer $API_TOKEN" \
     -F "_method=PUT" \
     -F "savefile=@$file" \
+    -F "updated_at=$update_timestamp" \
     "$update_url")
 
 # Separate the HTTP status code from the response

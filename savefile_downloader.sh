@@ -94,7 +94,7 @@ for console_name in "${CONSOLE_NAMES[@]}"; do
         # Check if the local file is newer than the remote file
         if [[ -f "$local_abs_path" ]] && [[ $force != true ]]; then
             # Get the modification time of the local file
-            local_modification_time=$(stat -c %Y "$local_abs_path")
+            local_modification_time=$(date -r "$local_abs_path" +%s)
 
             # Get the modification time of the remote file
             remote_modification_time=$(echo "$savefiles_json" | jq -r --argjson savefile_id "$savefile_id" '.[] | select(.id == $savefile_id) | .updated_at')
@@ -166,9 +166,7 @@ if [[ $verbose == true ]]; then
         echo "Logged out"
     else
         echo "Failed to log out"
-        if [[ $very_verbose == true ]]; then
-            echo "$log_output"
-        fi
+        echo "$log_output"
         exit 1
     fi
 fi

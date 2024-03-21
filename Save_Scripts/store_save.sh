@@ -73,6 +73,9 @@ if [[ $file_path == "" ]]; then
     file_path="/"
 fi
 
+# Get the file timestamp
+file_timestamp=$(date -r "$file" +"%Y-%m-%dT%H:%M:%S")
+
 # Send store file request
 response=$(curl -s -w "%{http_code}" -X POST \
     -H "Authorization: Bearer $API_TOKEN" \
@@ -80,6 +83,7 @@ response=$(curl -s -w "%{http_code}" -X POST \
     -F "savefile=@$file" \
     -F "file_name=$file_name" \
     -F "file_path=$file_path" \
+    -F "updated_at=$file_timestamp" \
     -F "fk_id_console=$console_id" \
     "$store_url")
 
