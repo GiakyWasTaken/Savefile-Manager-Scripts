@@ -7,6 +7,9 @@ exec > >(tee -i "$(dirname "${BASH_SOURCE[0]}")/log/savefile_crawler_$current_ti
 # Source the .env file
 source "$(dirname "${BASH_SOURCE[0]}")/.env"
 
+# Clean the logs older than a day
+"$(dirname "${BASH_SOURCE[0]}")/log_cleaner.sh"
+
 # Parse command line options
 while [[ $# -gt 0 ]]; do
     key="$1"
