@@ -1,8 +1,13 @@
 #!/bin/bash
 
 # Create and write a log file
+log_dir="$(dirname "${BASH_SOURCE[0]}")/log"
+if [[ ! -d "$log_dir" ]]; then
+    mkdir -p "$log_dir"
+fi
+
 current_time=$(date "+%Y.%m.%d-%H.%M.%S")
-exec > >(tee -i "$(dirname "${BASH_SOURCE[0]}")/log/savefile_downloader_$current_time.log")
+exec > >(tee -i "$log_dir/savefile_downloader_$current_time.log")
 
 # Source the .env file
 source "$(dirname "${BASH_SOURCE[0]}")/.env"
@@ -14,18 +19,18 @@ source "$(dirname "${BASH_SOURCE[0]}")/.env"
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
-        --verbose|-v)
-            verbose=true
-            shift
-            ;;
-        --force|-f)
-            force=true
-            shift
-            ;;
-        *)
-            echo "Unknown option: $key"
-            exit 1
-            ;;
+    --verbose | -v)
+        verbose=true
+        shift
+        ;;
+    --force | -f)
+        force=true
+        shift
+        ;;
+    *)
+        echo "Unknown option: $key"
+        exit 1
+        ;;
     esac
 done
 
@@ -89,7 +94,7 @@ for console_name in "${CONSOLE_NAMES[@]}"; do
         # echo "$savefile_relative_path"
 
         if [[ $savefile_relative_path == "/" ]]; then
-            local_abs_path=$savefile_path$savefile_name 
+            local_abs_path=$savefile_path$savefile_name
         else
             local_abs_path=$savefile_path$savefile_relative_path$savefile_name
         fi
@@ -107,9 +112,10 @@ for console_name in "${CONSOLE_NAMES[@]}"; do
 
             # Check if the local file is newer than the remote file
             if [[ $local_modification_time -ge $remote_modification_time ]]; then
+                skipped_files=$((skipped_files + 1))
+
                 if [[ $verbose == true ]]; then
                     echo "Local file is the same or newer than the remote file: $savefile_name"
-                    skipped_files=$((skipped_files + 1))
                 fi
                 continue
             fi

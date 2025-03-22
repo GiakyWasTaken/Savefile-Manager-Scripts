@@ -1,8 +1,13 @@
 #!/bin/bash
 
 # Create and write a log file
+log_dir="$(dirname "${BASH_SOURCE[0]}")/log"
+if [[ ! -d "$log_dir" ]]; then
+    mkdir -p "$log_dir"
+fi
+
 current_time=$(date "+%Y.%m.%d-%H.%M.%S")
-exec > >(tee -i "$(dirname "${BASH_SOURCE[0]}")/log/savefile_crawler_$current_time.log")
+exec > >(tee -i "$log_dir/savefile_crawler_$current_time.log")
 
 # Source the .env file
 source "$(dirname "${BASH_SOURCE[0]}")/.env"
@@ -14,34 +19,34 @@ source "$(dirname "${BASH_SOURCE[0]}")/.env"
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
-        --auto-update|-a)
-            # Auto-update already existing files only if the local file is newer
-            auto_update=true
-            shift
-            ;;
-        --force-update|-f)
-            # Force update the already existing files even if the remote file is newer
-            force_update=true
-            shift
-            ;;
-        --ignore-existing|-i)
-            # Ignore updating already existing files
-            ignore_existing=true
-            shift
-            ;;
-        --verbose|-v)
-            verbose=true
-            shift
-            ;;
-        -vv)
-            verbose=true
-            very_verbose=true
-            shift
-            ;;
-        *)
-            echo "Unknown option: $key"
-            exit 1
-            ;;
+    --auto-update | -a)
+        # Auto-update already existing files only if the local file is newer
+        auto_update=true
+        shift
+        ;;
+    --force-update | -f)
+        # Force update the already existing files even if the remote file is newer
+        force_update=true
+        shift
+        ;;
+    --ignore-existing | -i)
+        # Ignore updating already existing files
+        ignore_existing=true
+        shift
+        ;;
+    --verbose | -v)
+        verbose=true
+        shift
+        ;;
+    -vv)
+        verbose=true
+        very_verbose=true
+        shift
+        ;;
+    *)
+        echo "Unknown option: $key"
+        exit 1
+        ;;
     esac
 done
 
@@ -88,7 +93,7 @@ for save_path in "${SAVES_PATHS[@]}"; do
     if [[ $output == *"not found"* ]]; then
         # Create the console
         output=$("$(dirname "${BASH_SOURCE[0]}")/Console_Scripts/store_console.sh" "$console_name" -v)
-        
+
         # Get the exit code of the previous command
         exit_code=$?
 
@@ -117,7 +122,8 @@ for save_path in "${SAVES_PATHS[@]}"; do
     fi
 
     # Loop through each file in the directory and subdirectories
-    IFS=$'\n'; set -f
+    IFS=$'\n'
+    set -f
     for file in $(find "$save_path"); do
 
         # Check if $file is a directory
@@ -152,18 +158,19 @@ for save_path in "${SAVES_PATHS[@]}"; do
 
         # If the file already exists save the file name to an array
         elif [[ $output == *"already exists"* ]]; then
-                # Add the console id and the file name to the array
-                existing_files+=("$console_id")
-                existing_files+=("$file_timestamp")
-                existing_files+=("$file")
-                # Increment the already_exists counter
-                already_exists=$((already_exists + 1))
+            # Add the console id and the file name to the array
+            existing_files+=("$console_id")
+            existing_files+=("$file_timestamp")
+            existing_files+=("$file")
+            # Increment the already_exists counter
+            already_exists=$((already_exists + 1))
         else
             exit_code_1=$((exit_code_1 + 1))
         fi
     done
 
-    unset IFS; set +f
+    unset IFS
+    set +f
 
     # Increment the saves_array_index
     saves_array_index=$((saves_array_index + 1))
@@ -174,54 +181,49 @@ echo "Files successfully uploaded: $exit_code_0 / $((exit_code_0 + exit_code_1 +
 echo "Files failed to upload: $exit_code_1 / $((exit_code_0 + exit_code_1 + already_exists))"
 echo "Files that already exist: $already_exists / $((exit_code_0 + exit_code_1 + already_exists))"
 
-# Check if the ignore-existing argument is provided or if there are no existing files
-if [[ $ignore_existing == true || ${#existing_files[@]} -eq 0 ]]; then
-    # Log out of the API
-    log_output=$("$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/logout_api.sh")
-    unset API_TOKEN
-    if [[ $verbose == true ]]; then
-        if [[ $log_output == *"Logged out"* ]]; then
-            echo "Logged out"
-        else
-            echo "Failed to log out"
-            if [[ $very_verbose == true ]]; then
-                echo "$log_output"
-            fi
-            exit 1
-        fi
-    fi
-    exit 0
-fi
+# Wait one second
+sleep 1s
 
-# Manage the already existing files
-
-# Check if auto-update argument is provided
-if [[ $auto_update != true ]]; then
+# If no arguments are provided and there are existing files, ask the user if they want to update them
+if [[ $ignore_existing != true && ${#existing_files[@]} -ne 0 && $auto_update != true ]]; then
     # Ask the user if they want to update the already existing files
     read -r -p "Do you want to update the already existing files? (y/N): " update_existing
+
     # Check the user's response and perform the update if requested
     if [[ $update_existing == "y" || $update_existing == "Y" ]]; then
-        auto_update=true
-    else 
-        # Exit the script if the user does not want to update the files
-        # Log out of the API
-        log_output=$("$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/logout_api.sh")
-        unset API_TOKEN
         if [[ $verbose == true ]]; then
-            if [[ $log_output == *"Logged out"* ]]; then
-                echo "Logged out"
-            else
-                echo "Failed to log out"
-                if [[ $very_verbose == true ]]; then
-                    echo "$log_output"
-                fi
-                exit 1
-            fi
+            echo "User selected to update existing files"
         fi
-        exit 0
+    else
+        $ignore_existing=true
+
+        if [[ $verbose == true ]]; then
+            echo "User selected not to update existing files"
+        fi
     fi
+fi
+
+# If the user chose to ignore existing files or if there are no existing files, log out of the API
+if [[ $ignore_existing == true || ${#existing_files[@]} -eq 0 || $auto_update != true ]]; then
+    # Log out of the API
+    echo "Logging out of API"
+    log_output=$("$(dirname "${BASH_SOURCE[0]}")/Auth_Scripts/logout_api.sh")
+
+    unset API_TOKEN
+
+    if [[ $log_output == *"Logged out"* ]]; then
+        echo "Logged out"
+    else
+        echo "Failed to log out"
+        exit 1
+    fi
+
+    exit 0
+# Manage the already existing files
+elif [[ $auto_update == true ]]; then
+    echo "Auto-updating already existing files"
 else
-    echo "Auto-updating already existing files..."
+    echo "Processing existing files"
 fi
 
 # Reset the counters
@@ -258,20 +260,21 @@ for file_to_update in "${existing_files[@]}"; do
             echo "Failed to get the savefile ID of \"$file_path\" with console ID $console_id"
             continue
         fi
-        
+
         # Get the last modified date of the local file
         local_date=$(date -r "$file_to_update" +%s)
         # Get the last modified date of the remote file
         remote_file=$("$(dirname "${BASH_SOURCE[0]}")/Save_Scripts/show_save.sh" "$savefile_id" --raw)
-        # Check if the remote file is newer
-        remote_date=$(grep -oP '(?<=updated_at":")[^"]*' <<< "$remote_file")
-        remote_date=$(date -d "$remote_date" +%s)
+        # Extract and convert the remote file's UTC timestamp to local time
+        remote_date_utc=$(grep -oP '(?<=updated_at":")[^"]*' <<<"$remote_file" | sed 's/Z$//')
+        remote_date=$(date -d "$remote_date_utc UTC" +%s)
 
         if [[ $local_date -le $remote_date ]]; then
             # Skip the update if the local file is older or the same
+            skip_update=$((skip_update + 1))
+
             if [[ $verbose == true ]]; then
                 echo "Skipping \"$file_to_update\" because the remote file is newer or the same"
-                skip_update=$((skip_update + 1))
             fi
             continue
         fi
